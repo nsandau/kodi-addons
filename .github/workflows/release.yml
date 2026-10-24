@@ -1,10 +1,15 @@
-name: Release Kodi addon
+name: Release Kodi addon and repository
 on:
   push:
     tags:
       - 'v*'
 permissions:
   contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: kodi-pages
+  cancel-in-progress: false
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -23,11 +28,30 @@ jobs:
           PY
       - name: Test
         run: python3 -m unittest discover -s tests -v
-      - name: Package
-        run: python3 scripts/build_release.py
-      - name: Publish ZIP
+      - name: Build repository
+        run: python3 -m scripts.build_repository
+      - name: Publish ZIPs
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" dist/*.zip --verify-tag --title "$RELEASE_TAG" --generate-notes
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" dist/site/addons/*/*.zip --clobber
+          else
+            gh release create "$RELEASE_TAG" dist/site/addons/*/*.zip --verify-tag --title "$RELEASE_TAG" --generate-notes
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/site
+  deploy:
+    needs: release
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Kodi repository
+        id: deployment
+        uses: actions/deploy-pages@v4

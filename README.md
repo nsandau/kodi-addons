@@ -12,15 +12,25 @@ A Kodi service addon that removes watched media through Sonarr and Radarr after 
 - Reads watch history through Kodi's internal JSON-RPC API. You do not need to enable Kodi's HTTP server.
 - Uses Python's standard library. No pip, requests, micromamba, or extra Python addon dependency is needed on the Chromecast.
 
-## Install from GitHub
+## Install the Kodi repository
 
-Download the **release asset** `service.kodi.watchedcleanup-0.1.0.zip`, not GitHub's automatically generated source ZIP. Copy it to a location Kodi can browse, such as a network share.
+Add this URL in **Settings > File manager > Add source**:
 
-1. In Kodi, allow **Settings > System > Add-ons > Unknown sources**.
-2. Open **Add-ons > Install from zip file** and select the release ZIP.
-3. Open **Watched Media Cleanup > Configure**.
+```text
+https://nsandau.github.io/kodi-watched-cleanup/
+```
 
-Targets Python 3 Kodi releases, Kodi 19 and newer. Device compatibility still needs an initial on-device dry run. A GitHub ZIP installation does not provide automatic addon updates. Install subsequent release ZIPs manually.
+Name the source `Watched Cleanup`.
+
+1. Allow **Settings > System > Add-ons > Unknown sources**.
+2. Open **Add-ons > Install from zip file > Watched Cleanup**.
+3. Select **repository.nsandau.watchedcleanup-1.0.0.zip**. If your skin only shows folders, browse **addons > repository.nsandau.watchedcleanup** to find it.
+4. Open **Install from repository > Watched Media Cleanup Repository > Program add-ons > Watched Media Cleanup > Install**.
+5. Open **Watched Media Cleanup > Configure** and follow the dry-run instructions below.
+
+The repository supplies future addon updates through Kodi's normal update mechanism. Allow automatic updates for this addon in Kodi if desired. Installing the repository does not enable live deletion or provide your server credentials.
+
+Targets Python 3 Kodi releases, Kodi 19 and newer. Device compatibility still needs an initial on-device dry run. The installable addon ZIP is also available under [GitHub Releases](https://github.com/nsandau/kodi-watched-cleanup/releases), if you prefer manual installation.
 
 ## Configure and dry run
 
@@ -73,14 +83,18 @@ Logs go to Kodi's log and a rotating `cleanup.log` in `special://profile/addon_d
 
 ## Development and release
 
-The existing cleanup engine remains in `cleanup.py`. Both the Kodi service and optional CLI use it, with no duplicate deletion implementation. Run development tools using micromamba `base`:
+The checkout lives at `/home/nicolai/sandbox/kodi-watched-cleanup`, outside xyOps workflows. The cleanup engine remains in `cleanup.py`. Both the Kodi service and optional CLI use it, with no duplicate deletion implementation. Run development tools using micromamba `base`:
 
 ```bash
 micromamba run -n base python -m unittest discover -s tests -v
-micromamba run -n base python scripts/build_release.py
+micromamba run -n base python -m scripts.build_repository
 ```
 
-The builder creates `dist/service.kodi.watchedcleanup-0.1.0.zip`. It uses an explicit file allowlist and excludes config, credentials, tests, caches, and Git metadata. GitHub Actions runs tests and builds an installable artifact for each push. Pushing a version tag matching `addon.xml`, such as `v0.1.0`, publishes a GitHub release ZIP.
+The builder creates a complete static Kodi repository under `dist/site`, including both addon ZIPs, the combined metadata index, its SHA-256 change token, and browsable HTML listings. ZIPs are built from explicit file lists, excluding config, credentials, tests, caches, and Git metadata. Repository output must be empty before building, so stale or unrelated files cannot be published by accident.
+
+GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.1.1`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
+
+The repository uses HTTPS. Package-header hash checks are disabled because GitHub Pages does not expose Kodi's required content-hash headers. The SHA-256 index token tells Kodi when to refresh metadata. It is not a package signature.
 
 The optional CLI still supports an ignored `config.json` based on `config.example.json`:
 
@@ -104,3 +118,4 @@ CLI deletion requires both `--execute` and `dry_run: false`. Do not run it concu
 - [Service addons](https://kodi.wiki/view/Service_add-ons)
 - [Addon manifest](https://kodi.wiki/view/Addon.xml)
 - [Modern addon settings](https://kodi.wiki/view/Add-on_settings_conversion)
+- [Kodi addon repositories](https://kodi.wiki/view/Add-on_repositories)
