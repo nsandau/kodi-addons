@@ -25,7 +25,12 @@ def main():
             if path.exists()
             else "No checks have run yet."
         )
-        dialog.textviewer("Watched media cleanup", content[-64000:])
+        dialog.textviewer(
+            "Watched media cleanup",
+            "Log history (latest portion). Turning verbose off affects new checks, "
+            "not earlier entries. Each Planning cleanup line shows its verbose mode.\n\n"
+            + content[-64000:],
+        )
     else:
         queue_cleanup(addon, dialog, xbmcgui.Window(10000), live=action == "live")
 

@@ -290,14 +290,13 @@ def build_plan(config, sessions, now=None):
     mappings = config.get("path_mappings", [])
     kodi_url = config["kodi"]["url"]
     verbose = config.get("verbose_logs", False)
-    if verbose:
-        LOG.info(
-            "Watch-history details: timezone=%s retention_days=%s cutoff_utc=%s. "
-            "Retention eligibility alone does not authorize deletion",
-            config.get("kodi_timezone", "Europe/Copenhagen"),
-            config.get("retention_days", 3),
-            cutoff.isoformat(),
-        )
+    LOG.info(
+        "Planning cleanup: verbose_logs=%s timezone=%s retention_days=%s cutoff_utc=%s",
+        "on" if verbose else "off",
+        config.get("kodi_timezone", "Europe/Copenhagen"),
+        config.get("retention_days", 3),
+        cutoff.isoformat(),
+    )
     movies = indexed_kodi(
         kodi_items(sessions["kodi"], kodi_url, "VideoLibrary.GetMovies", "movies"),
         mappings,
@@ -315,8 +314,7 @@ def build_plan(config, sessions, now=None):
         zone=zone,
     )
     LOG.info(
-        "Cutoff=%s Kodi movie paths=%d episode paths=%d",
-        cutoff.isoformat(),
+        "Kodi indexed movie paths=%d episode paths=%d",
         len(movies),
         len(episodes),
     )
@@ -330,7 +328,8 @@ def build_plan(config, sessions, now=None):
         if len(matches) != 1 or not all(
             eligible(item, cutoff, zone) for item in records
         ):
-            LOG.info("SKIP movie %s: unmatched, ambiguous, or not eligible", path)
+            if verbose:
+                LOG.info("SKIP movie %s: unmatched, ambiguous, or not eligible", path)
             continue
         movie = matches[0]
         # Deleting a movie removes its entire folder. Reject extra movie versions/files.
@@ -378,9 +377,10 @@ def build_plan(config, sessions, now=None):
         if len(matches) != 1 or not all(
             eligible(item, cutoff, zone) for item in records
         ):
-            LOG.info(
-                "SKIP episode file %s: unmatched, ambiguous, or not eligible", path
-            )
+            if verbose:
+                LOG.info(
+                    "SKIP episode file %s: unmatched, ambiguous, or not eligible", path
+                )
             continue
         file, assigned = matches[0]
         kodi_numbers = {(item.get("season"), item.get("episode")) for item in records}
@@ -401,6 +401,16 @@ def build_plan(config, sessions, now=None):
                 "episode_ids": [item["id"] for item in assigned],
             }
         )
+    movie_candidates = sum(item["service"] == "radarr" for item in plan)
+    episode_candidates = len(plan) - movie_candidates
+    LOG.info(
+        "Plan: movie_candidates=%d movie_paths_skipped=%d "
+        "episode_file_candidates=%d episode_paths_skipped=%d",
+        movie_candidates,
+        len(movies) - movie_candidates,
+        episode_candidates,
+        len(episodes) - episode_candidates,
+    )
     return plan
 
 

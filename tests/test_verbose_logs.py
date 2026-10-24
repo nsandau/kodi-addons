@@ -156,6 +156,108 @@ class VerboseLogTests(unittest.TestCase):
         self.assertEqual(sum("WATCH movie" in line for line in captured.output), 1)
         self.assertTrue(any("SKIP movie" in line for line in captured.output))
 
+    def test_verbose_toggle_controls_routine_skip_lines_on_each_run(self):
+        config = {
+            "kodi_timezone": "Europe/Copenhagen",
+            "kodi": {"url": "internal"},
+            "sonarr": {"url": "http://sonarr"},
+            "radarr": {"url": "http://radarr"},
+        }
+        movies = [
+            {"movieid": i, "file": f"/movies/{i}.mkv", "playcount": 0, "lastplayed": ""}
+            for i in range(100)
+        ]
+        episodes = [
+            {"episodeid": 1, "file": "/tv/a.mkv", "playcount": 0, "lastplayed": ""}
+        ]
+        plans = []
+        for verbose in (False, True, False):
+            config["verbose_logs"] = verbose
+            with (
+                patch.object(cleanup, "kodi_items", side_effect=[movies, episodes]),
+                patch.object(cleanup, "api", return_value=[]),
+                self.assertLogs(cleanup.LOG) as captured,
+            ):
+                plans.append(
+                    cleanup.build_plan(
+                        config, {"kodi": None, "sonarr": None, "radarr": None}, self.now
+                    )
+                )
+            lines = captured.output
+            self.assertIn("verbose_logs=" + ("on" if verbose else "off"), lines[0])
+            details = [line for line in lines if "WATCH " in line or "SKIP " in line]
+            self.assertEqual(len(details), 202 if verbose else 0)
+            self.assertTrue(any("movie_paths_skipped=100" in line for line in lines))
+            self.assertTrue(any("episode_paths_skipped=1" in line for line in lines))
+            if not verbose:
+                self.assertEqual(
+                    len(lines), 3
+                )  # Run header, library counts, plan summary.
+        self.assertEqual(plans, [[], [], []])
+
+    def test_nonverbose_retains_safety_warnings(self):
+        config = {
+            "verbose_logs": False,
+            "kodi_timezone": "Europe/Copenhagen",
+            "kodi": {"url": "internal"},
+            "sonarr": {"url": "http://sonarr"},
+            "radarr": {"url": "http://radarr"},
+        }
+        movie = {
+            "movieid": 1,
+            "file": "/movies/a.mkv",
+            "playcount": 1,
+            "lastplayed": "2026-05-01",
+        }
+        with (
+            patch.object(cleanup, "kodi_items", side_effect=[[movie], []]),
+            patch.object(
+                cleanup,
+                "api",
+                side_effect=[
+                    [{"id": 1, "movieFile": {"path": movie["file"]}}],
+                    [],
+                    [],
+                ],
+            ),
+            self.assertLogs(cleanup.LOG) as captured,
+        ):
+            self.assertEqual(
+                cleanup.build_plan(
+                    config, {"kodi": None, "sonarr": None, "radarr": None}, self.now
+                ),
+                [],
+            )
+        self.assertTrue(
+            any(
+                "WARNING" in line and "file inventory" in line
+                for line in captured.output
+            )
+        )
+        self.assertFalse(any("WATCH " in line for line in captured.output))
+
+    def test_nonverbose_retains_dry_run_and_live_deletion_audit_lines(self):
+        plan = [{"service": "radarr", "id": 1, "path": "/movies/a.mkv"}]
+        for execute in (False, True):
+            with (
+                patch.object(cleanup, "api") as api,
+                self.assertLogs(cleanup.LOG) as captured,
+            ):
+                cleanup.apply_plan(
+                    {
+                        "verbose_logs": False,
+                        "dry_run": False,
+                        "radarr": {"url": "http://radarr"},
+                    },
+                    {"radarr": None},
+                    plan,
+                    execute,
+                )
+            self.assertIn(
+                "DELETE radarr" if execute else "DRY RUN radarr", captured.output[0]
+            )
+            self.assertEqual(api.call_count, int(execute))
+
     def test_kodi_setting_is_off_by_default_and_validated(self):
         addon = MagicMock()
         values = {
