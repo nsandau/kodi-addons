@@ -1,6 +1,6 @@
-# Watched Media Cleanup for Kodi
+# nsandau's Kodi Addons
 
-A Kodi service addon that removes watched media through Sonarr and Radarr after a configurable retention period. Built for devices such as Chromecast where Kodi is not always running.
+A Kodi repository for multiple addons. Currently includes **Watched Media Cleanup**, a service addon that removes watched media through Sonarr and Radarr after a configurable retention period. Built for devices such as Chromecast where Kodi is not always running.
 
 **Dry run is the default. Background checks are off until you configure and enable them.** This is an initial release, tested with mocked Kodi and Arr APIs, not yet on a physical Chromecast.
 
@@ -17,20 +17,20 @@ A Kodi service addon that removes watched media through Sonarr and Radarr after 
 Add this URL in **Settings > File manager > Add source**:
 
 ```text
-https://nsandau.github.io/kodi-watched-cleanup/
+https://nsandau.github.io/kodi-addons/
 ```
 
-Name the source `Watched Cleanup`.
+Name the source `nsandau Kodi`.
 
 1. Allow **Settings > System > Add-ons > Unknown sources**.
-2. Open **Add-ons > Install from zip file > Watched Cleanup**.
-3. Select **repository.nsandau.watchedcleanup-1.0.0.zip**. If your skin only shows folders, browse **addons > repository.nsandau.watchedcleanup** to find it.
-4. Open **Install from repository > Watched Media Cleanup Repository > Program add-ons > Watched Media Cleanup > Install**.
+2. Open **Add-ons > Install from zip file > nsandau Kodi**.
+3. Select **repository.nsandau.kodi-1.0.0.zip**. If your skin only shows folders, browse **addons > repository.nsandau.kodi** to find it.
+4. Open **Install from repository > nsandau's Kodi Addons > Program add-ons > Watched Media Cleanup > Install**.
 5. Open **Watched Media Cleanup > Configure** and follow the dry-run instructions below.
 
 The repository supplies future addon updates through Kodi's normal update mechanism. Allow automatic updates for this addon in Kodi if desired. Installing the repository does not enable live deletion or provide your server credentials.
 
-Targets Python 3 Kodi releases, Kodi 19 and newer. Device compatibility still needs an initial on-device dry run. The installable addon ZIP is also available under [GitHub Releases](https://github.com/nsandau/kodi-watched-cleanup/releases), if you prefer manual installation.
+Targets Python 3 Kodi releases, Kodi 19 and newer. Device compatibility still needs an initial on-device dry run. The installable addon ZIP is also available under [GitHub Releases](https://github.com/nsandau/kodi-addons/releases), if you prefer manual installation.
 
 ## Configure and dry run
 
@@ -83,7 +83,7 @@ Logs go to Kodi's log and a rotating `cleanup.log` in `special://profile/addon_d
 
 ## Development and release
 
-The checkout lives at `/home/nicolai/sandbox/kodi-watched-cleanup`, outside xyOps workflows. The cleanup engine remains in `cleanup.py`. Both the Kodi service and optional CLI use it, with no duplicate deletion implementation. Run development tools using micromamba `base`:
+The checkout lives at `/home/nicolai/sandbox/kodi-addons`, outside xyOps workflows. The cleanup engine remains in `cleanup.py`. Both the Kodi service and optional CLI use it, with no duplicate deletion implementation. Run development tools using micromamba `base`:
 
 ```bash
 micromamba run -n base python -m unittest discover -s tests -v
@@ -92,7 +92,7 @@ micromamba run -n base python -m scripts.build_repository
 
 The builder creates a complete static Kodi repository under `dist/site`, including both addon ZIPs, the combined metadata index, its SHA-256 change token, and browsable HTML listings. ZIPs are built from explicit file lists, excluding config, credentials, tests, caches, and Git metadata. Repository output must be empty before building, so stale or unrelated files cannot be published by accident.
 
-GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.1.1`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
+GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.1.2`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
 
 The repository uses HTTPS. Package-header hash checks are disabled because GitHub Pages does not expose Kodi's required content-hash headers. The SHA-256 index token tells Kodi when to refresh metadata. It is not a package signature.
 

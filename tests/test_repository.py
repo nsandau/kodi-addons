@@ -28,7 +28,7 @@ class RepositoryTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.site = build_repository(Path(self.temporary.name) / "site")
         self.index = ElementTree.parse(self.site / "addons.xml").getroot()
-        self.repo = self.index.find("addon[@id='repository.nsandau.watchedcleanup']")
+        self.repo = self.index.find("addon[@id='repository.nsandau.kodi']")
         self.directory = self.repo.find("extension[@point='xbmc.addon.repository']/dir")
         self.base = self.directory.findtext("info").rsplit("/", 1)[0] + "/"
 
@@ -65,9 +65,18 @@ class RepositoryTests(unittest.TestCase):
                     )
                 )
 
+    def test_repository_identity_is_generic_and_service_identity_is_unchanged(self):
+        self.assertEqual(self.repo.attrib["name"], "nsandau's Kodi Addons")
+        service = self.index.find("addon[@id='service.kodi.watchedcleanup']")
+        self.assertEqual(service.attrib["name"], "Watched Media Cleanup")
+        html = (self.site / "index.html").read_text()
+        self.assertIn("nsandau&#x27;s Kodi Addons", html)
+        self.assertIn("https://github.com/nsandau/kodi-addons#readme", html)
+        self.assertNotIn("kodi-watched-cleanup", html)
+
     def test_repository_urls_and_change_token(self):
         self.assertEqual(urlsplit(self.base).scheme, "https")
-        self.assertEqual(self.base, "https://nsandau.github.io/kodi-watched-cleanup/")
+        self.assertEqual(self.base, "https://nsandau.github.io/kodi-addons/")
         metadata = self.hosted_path(self.directory.findtext("info")).read_bytes()
         token = (
             self.hosted_path(self.directory.findtext("checksum")).read_text().strip()

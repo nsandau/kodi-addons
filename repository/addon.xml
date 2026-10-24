@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.nsandau.watchedcleanup" name="Watched Media Cleanup Repository" version="1.0.0" provider-name="nsandau">
+<addon id="repository.nsandau.kodi" name="nsandau's Kodi Addons" version="1.0.0" provider-name="nsandau">
   <requires>
     <import addon="xbmc.addon" version="12.0.0"/>
   </requires>
-  <extension point="xbmc.addon.repository" name="Watched Media Cleanup Repository">
+  <extension point="xbmc.addon.repository" name="nsandau's Kodi Addons">
     <dir minversion="19.0.0">
-      <info compressed="false">https://nsandau.github.io/kodi-watched-cleanup/addons.xml</info>
-      <checksum>https://nsandau.github.io/kodi-watched-cleanup/addons.xml.sha256</checksum>
-      <datadir zip="true">https://nsandau.github.io/kodi-watched-cleanup/addons/</datadir>
+      <info compressed="false">https://nsandau.github.io/kodi-addons/addons.xml</info>
+      <checksum>https://nsandau.github.io/kodi-addons/addons.xml.sha256</checksum>
+      <datadir zip="true">https://nsandau.github.io/kodi-addons/addons/</datadir>
       <hashes>false</hashes>
     </dir>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary lang="en_GB">Install and update Watched Media Cleanup</summary>
-    <description lang="en_GB">Official project repository for the Kodi watched-media retention service. Hosted over HTTPS on GitHub Pages.</description>
+    <summary lang="en_GB">Install and update nsandau's Kodi addons</summary>
+    <description lang="en_GB">Kodi addon collection maintained by nsandau, including Watched Media Cleanup. Hosted over HTTPS on GitHub Pages.</description>
     <platform>all</platform>
     <license>MIT</license>
-    <source>https://github.com/nsandau/kodi-watched-cleanup</source>
+    <source>https://github.com/nsandau/kodi-addons</source>
   </extension>
 </addon>

@@ -70,12 +70,13 @@ def build_repository(output=None):
     bootstrap = package_paths[1].relative_to(output).as_posix()
     directory_index(
         output,
-        "Watched Media Cleanup Repository",
+        repository.attrib["name"],
         [
             (bootstrap, bootstrap),
             ("addons/", "addons/"),
             (
-                "https://github.com/nsandau/kodi-watched-cleanup#readme",
+                repository.findtext("extension[@point='xbmc.addon.metadata']/source")
+                + "#readme",
                 "Installation and configuration",
             ),
         ],
