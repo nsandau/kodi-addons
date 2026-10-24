@@ -1,4 +1,4 @@
-"""Kodi actions for setup, read-only dry-run requests, and local log viewing."""
+"""Kodi actions for setup, cleanup requests, and local log viewing."""
 
 import sys
 from pathlib import Path
@@ -7,7 +7,7 @@ import xbmcaddon
 import xbmcgui
 import xbmcvfs
 
-from resources.lib.runtime import ADDON_ID, REQUEST_KEY, boolean
+from resources.lib.runtime import ADDON_ID, queue_cleanup
 from resources.lib.setup import run_setup_action
 
 
@@ -26,18 +26,8 @@ def main():
             else "No checks have run yet."
         )
         dialog.textviewer("Watched media cleanup", content[-64000:])
-    elif not boolean(addon, "enabled", False):
-        dialog.ok(
-            "Watched media cleanup",
-            "Configure the addon and enable background checks first. Keep Dry run enabled.",
-        )
-        addon.openSettings()
     else:
-        xbmcgui.Window(10000).setProperty(REQUEST_KEY, "true")
-        dialog.notification(
-            "Watched media cleanup",
-            "Dry run queued. Waiting until playback and library scans stop.",
-        )
+        queue_cleanup(addon, dialog, xbmcgui.Window(10000), live=action == "live")
 
 
 if __name__ == "__main__":

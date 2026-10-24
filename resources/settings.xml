@@ -9,6 +9,7 @@
         <setting id="retention_days" type="integer" label="32006"><level>0</level><default>3</default><control type="edit" format="integer"><heading>32006</heading></control></setting>
         <setting id="interval_minutes" type="integer" label="32007"><level>0</level><default>60</default><control type="edit" format="integer"><heading>32007</heading></control></setting>
         <setting id="run_dry" type="action" label="32008"><level>0</level><data>RunScript(service.kodi.watchedcleanup)</data><control type="button" format="action"><close>true</close></control></setting>
+        <setting id="run_live" type="action" label="32025"><level>0</level><data>RunScript(service.kodi.watchedcleanup,live)</data><control type="button" format="action"><close>true</close></control></setting>
         <setting id="verbose_logs" type="boolean" label="32024"><level>0</level><default>false</default><control type="toggle"/></setting>
         <setting id="show_logs" type="action" label="32009"><level>0</level><data>RunScript(service.kodi.watchedcleanup,logs)</data><control type="button" format="action"><close>true</close></control></setting>
       </group>

@@ -73,6 +73,10 @@ Only after checking dry-run logs and backups:
 - Turn **Dry run** off.
 - Turn **Allow permanent deletion** on.
 
+To start immediately, select **Run live cleanup now...** under Cleanup and confirm the permanent-deletion prompt. The button saves/closes settings intentionally before confirmation so the worker reads committed settings. Background checks must be enabled, **Dry run** must be off, and **Allow permanent deletion** must be on. It does not bypass retention or path/episode safety checks, and the action runs through the same single service worker, never as a second cleanup process.
+
+A manual live request waits for playback/scanning to stop, expires after five minutes, and is cancelled if settings change before execution. A failure or interruption clears the manual live request rather than automatically retrying it. Background checks retain their normal schedule and live/dry settings. This button is not a one-off override of dry-run mode.
+
 Both settings are required for automated deletion. Turning either safety gate back on stops live operation. The **Run dry run now** action always remains read-only.
 
 ### Deletion behavior
@@ -106,7 +110,7 @@ micromamba run -n base python -m scripts.build_repository
 
 The builder creates a complete static Kodi repository under `dist/site`, including both addon ZIPs, the combined metadata index, its SHA-256 change token, and browsable HTML listings. ZIPs are built from explicit file lists, excluding config, credentials, tests, caches, and Git metadata. Repository output must be empty before building, so stale or unrelated files cannot be published by accident.
 
-GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.2.2`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
+GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.2.3`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
 
 The repository uses HTTPS. Package-header hash checks are disabled because GitHub Pages does not expose Kodi's required content-hash headers. The SHA-256 index token tells Kodi when to refresh metadata. It is not a package signature.
 

@@ -94,3 +94,7 @@ msgstr ""
 msgctxt "#32024"
 msgid "Verbose watch-history logging (all library movies and episodes)"
 msgstr ""
+
+msgctxt "#32025"
+msgid "Run live cleanup now..."
+msgstr ""
