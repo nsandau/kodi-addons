@@ -40,7 +40,11 @@ def test_connection(addon, dialog, name):
         raise ValueError(
             "Server did not return valid " + expected + " status. Check its URL"
         )
-    dialog.ok(expected, "Connection successful. Version " + str(status["version"]))
+    dialog.notification(
+        expected,
+        "Connection successful. Version " + str(status["version"]),
+        sound=False,
+    )
 
 
 def choose_arr_root(addon, dialog, media):
@@ -56,33 +60,14 @@ def choose_arr_root(addon, dialog, media):
         if path not in paths:
             paths.append(path)
     if not paths:
-        dialog.ok(SERVICES[name], "No root folders configured on this server")
+        dialog.notification(
+            SERVICES[name], "No root folders configured on this server", sound=False
+        )
         return
     selected = dialog.select("Choose " + SERVICES[name] + " root for " + label, paths)
     if 0 <= selected < len(paths):
         # Keep exactly the root reported by the API. Never guess or store a cache.
         addon.setSetting(media + "_arr_path", paths[selected])
-
-
-def choose_kodi_root(addon, dialog, media):
-    _, label = MEDIA[media]
-    key = media + "_kodi_path"
-    current = addon.getSetting(key)
-    selected = dialog.browseSingle(
-        0,
-        "Choose Kodi " + label + " source folder",
-        "video",
-        defaultt=current,
-        treatAsFolder=True,
-    )
-    # Kodi returns defaultt on cancel, not necessarily an empty string.
-    if not selected or selected == current:
-        return
-    if cleanup.mapping_source(selected) is None:
-        raise ValueError(
-            "Choose an absolute folder or SMB/NFS source without embedded credentials. Store passwords in Kodi's source settings"
-        )
-    addon.setSetting(key, selected)
 
 
 def run_setup_action(addon, dialog, action):
@@ -92,8 +77,6 @@ def run_setup_action(addon, dialog, action):
         "test_radarr": (test_connection, "radarr"),
         "choose_tv_arr": (choose_arr_root, "tv"),
         "choose_movies_arr": (choose_arr_root, "movies"),
-        "choose_tv_kodi": (choose_kodi_root, "tv"),
-        "choose_movies_kodi": (choose_kodi_root, "movies"),
     }
     if action not in actions:
         return False
@@ -102,7 +85,7 @@ def run_setup_action(addon, dialog, action):
         function(addon, dialog, argument)
     except (ValueError, TypeError, KeyError, OSError, RuntimeError) as error:
         # Transport errors omit URLs, response bodies and authentication headers.
-        dialog.ok("Watched media cleanup", "Setup failed: " + str(error))
-    finally:
-        addon.openSettings()
+        dialog.notification(
+            "Watched media cleanup", "Setup failed: " + str(error), sound=False
+        )
     return True

@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 from xml.etree import ElementTree
 
-from resources.lib import setup
+from resources.lib import runtime, setup
 from scripts.build_release import ROOT
 
 
@@ -36,7 +36,7 @@ class SetupTests(unittest.TestCase):
             session, "GET", "http://sonarr:8989/base/api/v3/system/status"
         )
         session.close.assert_called_once()
-        self.assertIn("successful", self.dialog.ok.call_args.args[1])
+        self.assertIn("successful", self.dialog.notification.call_args.args[1])
         self.addon.setSetting.assert_not_called()
 
     def test_wrong_app_or_response_is_not_success(self):
@@ -52,7 +52,7 @@ class SetupTests(unittest.TestCase):
                 self.assertRaises(ValueError),
             ):
                 setup.test_connection(self.addon, self.dialog, "sonarr")
-        self.dialog.ok.assert_not_called()
+        self.dialog.notification.assert_not_called()
 
     def test_missing_credentials_or_invalid_url_never_calls_network(self):
         for key, value in (
@@ -69,7 +69,7 @@ class SetupTests(unittest.TestCase):
                 session.assert_not_called()
             self.values = old
 
-    def test_session_closed_on_api_error_and_dialog_returns_to_settings(self):
+    def test_api_error_keeps_settings_open_and_shows_only_notification(self):
         session = MagicMock()
         with (
             patch.object(setup.cleanup, "make_session", return_value=session),
@@ -81,9 +81,9 @@ class SetupTests(unittest.TestCase):
                 setup.run_setup_action(self.addon, self.dialog, "test_sonarr")
             )
         session.close.assert_called_once()
-        self.assertIn("401", self.dialog.ok.call_args.args[1])
-        self.assertNotIn("secret", self.dialog.ok.call_args.args[1])
-        self.addon.openSettings.assert_called_once()
+        self.assertIn("401", self.dialog.notification.call_args.args[1])
+        self.assertNotIn("secret", self.dialog.notification.call_args.args[1])
+        self.addon.openSettings.assert_not_called()
         self.addon.setSetting.assert_not_called()
 
     def test_choose_root_exactly_as_reported_and_only_after_selection(self):
@@ -118,40 +118,78 @@ class SetupTests(unittest.TestCase):
                 setup.choose_arr_root(self.addon, self.dialog, "tv")
         self.addon.setSetting.assert_not_called()
 
-    def test_kodi_folder_picker_uses_video_sources_and_preserves_network_path(self):
-        for path in ("smb://nas/media/TV/", "nfs://nas/export/TV/", "/mnt/TV/"):
-            self.dialog.browseSingle.return_value = path
-            setup.choose_kodi_root(self.addon, self.dialog, "tv")
-            self.addon.setSetting.assert_called_with("tv_kodi_path", path)
-        self.dialog.browseSingle.assert_called_with(
-            0, "Choose Kodi TV source folder", "video", defaultt="", treatAsFolder=True
+    def test_kodi_folders_use_native_settings_controls_not_scripts(self):
+        settings = ElementTree.parse(ROOT / "resources/settings.xml")
+        for key in ("tv_kodi_path", "movies_kodi_path"):
+            entry = settings.find(".//setting[@id='" + key + "']")
+            self.assertEqual(entry.attrib["type"], "path")
+            self.assertEqual(
+                entry.find("control").attrib, {"type": "button", "format": "path"}
+            )
+            self.assertEqual(entry.findtext("constraints/sources/source"), "video")
+            self.assertEqual(entry.findtext("constraints/allowempty"), "true")
+            self.assertIsNone(entry.find("data"))
+        self.assertIsNone(settings.find(".//setting[@id='browse_tv_kodi']"))
+        self.assertIsNone(settings.find(".//setting[@id='browse_movies_kodi']"))
+
+    def test_arr_picker_updates_live_dialog_without_reopening_or_notifications(self):
+        with patch.object(
+            setup, "fetch_service", return_value=[{"path": "/data/media/movies"}]
+        ):
+            self.assertTrue(
+                setup.run_setup_action(self.addon, self.dialog, "choose_movies_arr")
+            )
+        self.addon.setSetting.assert_called_once_with(
+            "movies_arr_path", "/data/media/movies"
+        )
+        self.addon.openSettings.assert_not_called()
+        self.dialog.ok.assert_not_called()
+        self.dialog.notification.assert_not_called()
+
+    def test_multiple_mapping_selections_commit_together_on_ok(self):
+        # Model Kodi's documented active-dialog setSetting route: selections
+        # update the existing pending settings, then OK persists the whole form.
+        # This is not an on-device Kodi GUI test.
+        persisted = dict(self.values)
+        pending = dict(persisted)
+        pending["movies_kodi_path"] = (
+            "nfs://192.168.4.200/home/nicolai/data/media/movies/"
+        )
+        pending["tv_kodi_path"] = "nfs://192.168.4.200/home/nicolai/data/media/tvshows/"
+        self.addon.setSetting.side_effect = pending.__setitem__
+        self.dialog.select.return_value = 0
+        with patch.object(
+            setup,
+            "fetch_service",
+            side_effect=[
+                [{"path": "/data/media/movies"}],
+                [{"path": "/data/media/tvshows"}],
+            ],
+        ):
+            setup.run_setup_action(self.addon, self.dialog, "choose_movies_arr")
+            setup.run_setup_action(self.addon, self.dialog, "choose_tv_arr")
+        self.assertNotIn("movies_arr_path", persisted)
+        self.addon.openSettings.assert_not_called()
+        self.dialog.ok.assert_not_called()
+        persisted.update(pending)  # The user presses the existing dialog's OK.
+        reopened = MagicMock()
+        reopened.getSetting.side_effect = lambda key: persisted.get(key, "")
+        config, _, _ = runtime.read_settings(reopened)
+        self.assertEqual(
+            config["path_mappings"],
+            [
+                {"kodi": pending["tv_kodi_path"], "arr": "/data/media/tvshows"},
+                {"kodi": pending["movies_kodi_path"], "arr": "/data/media/movies"},
+            ],
+        )
+        self.assertEqual(
+            setup.cleanup.map_path(
+                pending["movies_kodi_path"] + "Movie/movie.mkv", config["path_mappings"]
+            ),
+            "/data/media/movies/Movie/movie.mkv",
         )
 
-    def test_cancel_kodi_picker_does_not_clear_existing_mapping(self):
-        self.dialog.browseSingle.return_value = ""
-        self.values["tv_kodi_path"] = "smb://nas/tv"
-        setup.choose_kodi_root(self.addon, self.dialog, "tv")
-        self.addon.setSetting.assert_not_called()
-
-    def test_kodi_cancel_returning_default_does_not_write_mapping(self):
-        self.values["tv_kodi_path"] = "smb://nas/tv"
-        self.dialog.browseSingle.return_value = "smb://nas/tv"
-        setup.choose_kodi_root(self.addon, self.dialog, "tv")
-        self.addon.setSetting.assert_not_called()
-
-    def test_unsupported_or_credential_bearing_kodi_path_is_rejected(self):
-        for path in (
-            "smb://user:password@nas/tv",
-            "plugin://video",
-            "relative",
-            "smb://nas/a/../tv",
-        ):
-            self.dialog.browseSingle.return_value = path
-            with self.assertRaises(ValueError):
-                setup.choose_kodi_root(self.addon, self.dialog, "tv")
-        self.addon.setSetting.assert_not_called()
-
-    def test_actions_are_defined_and_save_settings_before_execution(self):
+    def test_setup_actions_never_close_the_settings_dialog(self):
         settings = ElementTree.parse(ROOT / "resources/settings.xml")
         actions = {
             entry.findtext("data"): entry
@@ -162,11 +200,9 @@ class SetupTests(unittest.TestCase):
             "test_radarr",
             "choose_tv_arr",
             "choose_movies_arr",
-            "choose_tv_kodi",
-            "choose_movies_kodi",
         ):
             entry = actions["RunScript(service.kodi.watchedcleanup," + action + ")"]
-            self.assertEqual(entry.findtext("control/close"), "true")
+            self.assertEqual(entry.findtext("control/close"), "false")
         self.assertFalse(setup.run_setup_action(self.addon, self.dialog, "logs"))
         self.addon.openSettings.assert_not_called()
 

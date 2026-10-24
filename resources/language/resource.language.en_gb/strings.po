@@ -60,7 +60,7 @@ msgid "Radarr API key"
 msgstr ""
 
 msgctxt "#32014"
-msgid "Kodi TV prefix (e.g. smb://nas/media/TV)"
+msgid "Kodi TV folder (select source root)"
 msgstr ""
 
 msgctxt "#32015"
@@ -68,7 +68,7 @@ msgid "Sonarr TV prefix (e.g. /data/tv)"
 msgstr ""
 
 msgctxt "#32016"
-msgid "Kodi movie prefix (e.g. smb://nas/media/Movies)"
+msgid "Kodi movie folder (select source root)"
 msgstr ""
 
 msgctxt "#32017"
@@ -83,16 +83,8 @@ msgctxt "#32019"
 msgid "Test Radarr connection"
 msgstr ""
 
-msgctxt "#32020"
-msgid "Browse Kodi TV folder..."
-msgstr ""
-
 msgctxt "#32021"
 msgid "Choose Sonarr root folder from server..."
-msgstr ""
-
-msgctxt "#32022"
-msgid "Browse Kodi movie folder..."
 msgstr ""
 
 msgctxt "#32023"

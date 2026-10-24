@@ -17,22 +17,20 @@
       <group id="2">
         <setting id="sonarr_url" type="string" label="32010"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32010</heading></control></setting>
         <setting id="sonarr_api_key" type="string" label="32011"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32011</heading><hidden>true</hidden></control></setting>
-        <setting id="test_sonarr" type="action" label="32018"><level>0</level><data>RunScript(service.kodi.watchedcleanup,test_sonarr)</data><control type="button" format="action"><close>true</close></control></setting>
+        <setting id="test_sonarr" type="action" label="32018"><level>0</level><data>RunScript(service.kodi.watchedcleanup,test_sonarr)</data><control type="button" format="action"><close>false</close></control></setting>
         <setting id="radarr_url" type="string" label="32012"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32012</heading></control></setting>
         <setting id="radarr_api_key" type="string" label="32013"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32013</heading><hidden>true</hidden></control></setting>
-        <setting id="test_radarr" type="action" label="32019"><level>0</level><data>RunScript(service.kodi.watchedcleanup,test_radarr)</data><control type="button" format="action"><close>true</close></control></setting>
+        <setting id="test_radarr" type="action" label="32019"><level>0</level><data>RunScript(service.kodi.watchedcleanup,test_radarr)</data><control type="button" format="action"><close>false</close></control></setting>
       </group>
     </category>
     <category id="category2" label="32002">
       <group id="3">
-        <setting id="tv_kodi_path" type="string" label="32014"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32014</heading></control></setting>
-        <setting id="browse_tv_kodi" type="action" label="32020"><level>0</level><data>RunScript(service.kodi.watchedcleanup,choose_tv_kodi)</data><control type="button" format="action"><close>true</close></control></setting>
+        <setting id="tv_kodi_path" type="path" label="32014"><level>0</level><default></default><constraints><sources><source>video</source></sources><writable>false</writable><allowempty>true</allowempty></constraints><control type="button" format="path"><heading>32014</heading></control></setting>
         <setting id="tv_arr_path" type="string" label="32015"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32015</heading></control></setting>
-        <setting id="select_tv_arr" type="action" label="32021"><level>0</level><data>RunScript(service.kodi.watchedcleanup,choose_tv_arr)</data><control type="button" format="action"><close>true</close></control></setting>
-        <setting id="movies_kodi_path" type="string" label="32016"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32016</heading></control></setting>
-        <setting id="browse_movies_kodi" type="action" label="32022"><level>0</level><data>RunScript(service.kodi.watchedcleanup,choose_movies_kodi)</data><control type="button" format="action"><close>true</close></control></setting>
+        <setting id="select_tv_arr" type="action" label="32021"><level>0</level><data>RunScript(service.kodi.watchedcleanup,choose_tv_arr)</data><control type="button" format="action"><close>false</close></control></setting>
+        <setting id="movies_kodi_path" type="path" label="32016"><level>0</level><default></default><constraints><sources><source>video</source></sources><writable>false</writable><allowempty>true</allowempty></constraints><control type="button" format="path"><heading>32016</heading></control></setting>
         <setting id="movies_arr_path" type="string" label="32017"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32017</heading></control></setting>
-        <setting id="select_movies_arr" type="action" label="32023"><level>0</level><data>RunScript(service.kodi.watchedcleanup,choose_movies_arr)</data><control type="button" format="action"><close>true</close></control></setting>
+        <setting id="select_movies_arr" type="action" label="32023"><level>0</level><data>RunScript(service.kodi.watchedcleanup,choose_movies_arr)</data><control type="button" format="action"><close>false</close></control></setting>
       </group>
     </category>
   </section>
