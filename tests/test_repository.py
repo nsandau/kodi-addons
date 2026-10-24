@@ -74,6 +74,15 @@ class RepositoryTests(unittest.TestCase):
         self.assertIn("https://github.com/nsandau/kodi-addons#readme", html)
         self.assertNotIn("kodi-watched-cleanup", html)
 
+    def test_index_has_trailing_whitespace_for_kodi_tinyxml_wrapper(self):
+        # Kodi Omega CXBMCTinyXML::InternalParse returns Parse(...) != nullptr.
+        # TinyXML 1 SkipWhiteSpace returns nullptr when called at an immediate
+        # NUL after </addons>, but a valid end pointer after consuming a newline.
+        # ElementTree accepts both, so XML well-formedness alone misses this bug.
+        metadata = (self.site / "addons.xml").read_bytes()
+        self.assertTrue(metadata.endswith(b"</addons>\n"))
+        self.assertEqual(ElementTree.fromstring(metadata).tag, "addons")
+
     def test_repository_urls_and_change_token(self):
         self.assertEqual(urlsplit(self.base).scheme, "https")
         self.assertEqual(self.base, "https://nsandau.github.io/kodi-addons/")

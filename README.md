@@ -24,7 +24,7 @@ Name the source `nsandau Kodi`.
 
 1. Allow **Settings > System > Add-ons > Unknown sources**.
 2. Open **Add-ons > Install from zip file > nsandau Kodi**.
-3. Select **repository.nsandau.kodi-1.0.0.zip**. If your skin only shows folders, browse **addons > repository.nsandau.kodi** to find it.
+3. Select **repository.nsandau.kodi-1.0.1.zip**. If your skin only shows folders, browse **addons > repository.nsandau.kodi** to find it.
 4. Open **Install from repository > nsandau's Kodi Addons > Program add-ons > Watched Media Cleanup > Install**.
 5. Open **Watched Media Cleanup > Configure** and follow the dry-run instructions below.
 
@@ -92,7 +92,7 @@ micromamba run -n base python -m scripts.build_repository
 
 The builder creates a complete static Kodi repository under `dist/site`, including both addon ZIPs, the combined metadata index, its SHA-256 change token, and browsable HTML listings. ZIPs are built from explicit file lists, excluding config, credentials, tests, caches, and Git metadata. Repository output must be empty before building, so stale or unrelated files cannot be published by accident.
 
-GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.1.2`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
+GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.1.3`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
 
 The repository uses HTTPS. Package-header hash checks are disabled because GitHub Pages does not expose Kodi's required content-hash headers. The SHA-256 index token tells Kodi when to refresh metadata. It is not a package signature.
 

@@ -53,7 +53,11 @@ def build_repository(output=None):
         directory_index(folder, addon.attrib["name"], [(package.name, package.name)])
     addons = ElementTree.Element("addons")
     addons.extend((service, repository))
-    metadata = ElementTree.tostring(addons, encoding="utf-8", xml_declaration=True)
+    # Kodi's TinyXML 1 wrapper treats a null return pointer as parse failure.
+    # A trailing newline keeps its final SkipWhiteSpace call off immediate EOF.
+    metadata = (
+        ElementTree.tostring(addons, encoding="utf-8", xml_declaration=True) + b"\n"
+    )
     (output / "addons.xml").write_bytes(metadata)
     (output / "addons.xml.sha256").write_text(
         hashlib.sha256(metadata).hexdigest() + "\n", encoding="ascii"
