@@ -166,19 +166,50 @@ def parse_lastplayed(value, local_zone):
         return None
 
 
-def eligible(item, cutoff, zone):
+def watch_status(item, cutoff, zone):
+    """Return the interpreted timestamp and the shared eligibility explanation."""
     played = parse_lastplayed(item.get("lastplayed"), zone)
     try:
         watched = int(item.get("playcount") or 0) > 0
     except (TypeError, ValueError):
-        return False
-    return watched and played is not None and played <= cutoff
+        return played, "invalid_playcount"
+    if not watched:
+        return played, "unwatched"
+    if played is None:
+        return None, "missing_or_invalid_lastplayed"
+    if played > cutoff:
+        return played, "retention_not_elapsed"
+    return played, "eligible"
 
 
-def indexed_kodi(items, mappings):
+def eligible(item, cutoff, zone):
+    return watch_status(item, cutoff, zone)[1] == "eligible"
+
+
+def indexed_kodi(items, mappings, *, verbose=False, kind=None, cutoff=None, zone=None):
     by_path = defaultdict(list)
     for item in items:
-        path = map_path(item.get("file"), mappings)
+        source = item.get("file")
+        path = map_path(source, mappings)
+        if verbose:
+            played, reason = watch_status(item, cutoff, zone)
+            # Never expose credentials or query tokens from rejected media URLs.
+            safe_source = (
+                mapping_source(source) or "[unsupported or credential-bearing path]"
+            )
+            LOG.info(
+                "WATCH %s id=%r file=%r mapped=%r playcount=%r lastplayed=%r "
+                "lastplayed_utc=%s retention_status=%s path_status=%s",
+                kind,
+                item.get("movieid" if kind == "movie" else "episodeid"),
+                safe_source,
+                path,
+                item.get("playcount"),
+                item.get("lastplayed"),
+                played.isoformat() if played else "unknown",
+                reason,
+                "mapped_or_same_path" if path else "unmapped_or_unsupported",
+            )
         if path:
             by_path[path].append(item)
     return by_path
@@ -219,6 +250,8 @@ def validate_config(config):
         raise ValueError("retention_days must be a positive finite number")
     if not isinstance(config.get("dry_run", True), bool):
         raise TypeError("dry_run must be a JSON boolean")
+    if not isinstance(config.get("verbose_logs", False), bool):
+        raise TypeError("verbose_logs must be a JSON boolean")
     configured_zone(config)
     for name in ("kodi", "sonarr", "radarr"):
         validate_service(name, config[name])
@@ -256,13 +289,30 @@ def build_plan(config, sessions, now=None):
     )
     mappings = config.get("path_mappings", [])
     kodi_url = config["kodi"]["url"]
+    verbose = config.get("verbose_logs", False)
+    if verbose:
+        LOG.info(
+            "Watch-history details: timezone=%s retention_days=%s cutoff_utc=%s. "
+            "Retention eligibility alone does not authorize deletion",
+            config.get("kodi_timezone", "Europe/Copenhagen"),
+            config.get("retention_days", 3),
+            cutoff.isoformat(),
+        )
     movies = indexed_kodi(
         kodi_items(sessions["kodi"], kodi_url, "VideoLibrary.GetMovies", "movies"),
         mappings,
+        verbose=verbose,
+        kind="movie",
+        cutoff=cutoff,
+        zone=zone,
     )
     episodes = indexed_kodi(
         kodi_items(sessions["kodi"], kodi_url, "VideoLibrary.GetEpisodes", "episodes"),
         mappings,
+        verbose=verbose,
+        kind="episode",
+        cutoff=cutoff,
+        zone=zone,
     )
     LOG.info(
         "Cutoff=%s Kodi movie paths=%d episode paths=%d",

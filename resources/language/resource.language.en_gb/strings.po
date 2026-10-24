@@ -98,3 +98,7 @@ msgstr ""
 msgctxt "#32023"
 msgid "Choose Radarr root folder from server..."
 msgstr ""
+
+msgctxt "#32024"
+msgid "Verbose watch-history logging (all library movies and episodes)"
+msgstr ""

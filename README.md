@@ -81,6 +81,16 @@ Both settings are required for automated deletion. Turning either safety gate ba
 - The full plan is read before any mutation. An API error stops that check, with retry after five minutes. Playback or settings interruptions retry after one minute.
 - Mutations are not transactional. If Sonarr deletion fails after unmonitoring, episodes can remain unmonitored. Review partial failures before retrying.
 
+### Verbose watch-history logs
+
+Enable **Verbose watch-history logging** under Cleanup, save settings, then select **Run dry run now**. No Kodi-wide debug logging is needed. Each check writes one `WATCH` line per Kodi library movie or episode record, including unwatched, unsupported, unmapped, and duplicate-file records. Files absent from Kodi's library cannot have watch history reported.
+
+Each line shows the record ID, file path, mapped Arr path, play count, raw Kodi `lastplayed`, its interpreted UTC timestamp, retention status, and path-mapping status. Missing or invalid timestamps are marked `unknown`, not invented. Retention status explains whether the record is old enough, not whether deletion is authorized. Exact Arr matches, complete episode coverage, and both live-mode safety gates still apply. The UTC cutoff and configured timezone are included in a per-check header. On Kodi, `local` means the device's system timezone.
+
+Verbose logging defaults to off and does not change the cleanup plan or make extra API requests. Rejected URLs are redacted so credentials and query tokens are not exposed. Ordinary file paths and watch timestamps are private viewing-history data, so review logs before sharing. The optional CLI accepts `"verbose_logs": true` in its config.
+
+Large libraries can fill the rotating logs. The in-addon viewer displays the latest 64,000 characters of the current log, not the entire library history. To inspect more, copy `cleanup.log`, `cleanup.log.1`, and `cleanup.log.2` from the addon profile before another check rotates them.
+
 Logs go to Kodi's log and a rotating `cleanup.log` in `special://profile/addon_data/service.kodi.watchedcleanup/`. The last successful check's summary is saved in `last_run.json` there. No watch-history cache is maintained.
 
 ## Development and release
@@ -94,7 +104,7 @@ micromamba run -n base python -m scripts.build_repository
 
 The builder creates a complete static Kodi repository under `dist/site`, including both addon ZIPs, the combined metadata index, its SHA-256 change token, and browsable HTML listings. ZIPs are built from explicit file lists, excluding config, credentials, tests, caches, and Git metadata. Repository output must be empty before building, so stale or unrelated files cannot be published by accident.
 
-GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.2.0`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
+GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.2.1`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
 
 The repository uses HTTPS. Package-header hash checks are disabled because GitHub Pages does not expose Kodi's required content-hash headers. The SHA-256 index token tells Kodi when to refresh metadata. It is not a package signature.
 

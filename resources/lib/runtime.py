@@ -42,6 +42,7 @@ def read_settings(addon):
         raise ValueError("Check interval must be between 5 and 1440 minutes")
     config = {
         "dry_run": boolean(addon, "dry_run", True),
+        "verbose_logs": boolean(addon, "verbose_logs", False),
         "retention_days": int(addon.getSetting("retention_days") or "3"),
         "kodi_timezone": "local",
         # KodiSession dispatches this internally, without an HTTP connection.

@@ -1,6 +1,7 @@
 {
   "retention_days": 3,
   "dry_run": true,
+  "verbose_logs": false,
   "kodi_timezone": "Europe/Copenhagen",
   "kodi": {
     "url": "http://192.168.1.10:8080/jsonrpc",
