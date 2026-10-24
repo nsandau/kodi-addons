@@ -17,6 +17,7 @@ FILES = (
     "resources/settings.xml",
     "resources/lib/__init__.py",
     "resources/lib/runtime.py",
+    "resources/lib/setup.py",
     "resources/lib/transport.py",
     "resources/language/resource.language.en_gb/strings.po",
 )

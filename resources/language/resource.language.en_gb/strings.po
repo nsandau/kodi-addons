@@ -74,3 +74,27 @@ msgstr ""
 msgctxt "#32017"
 msgid "Radarr movie prefix (e.g. /data/movies)"
 msgstr ""
+
+msgctxt "#32018"
+msgid "Test Sonarr connection"
+msgstr ""
+
+msgctxt "#32019"
+msgid "Test Radarr connection"
+msgstr ""
+
+msgctxt "#32020"
+msgid "Browse Kodi TV folder..."
+msgstr ""
+
+msgctxt "#32021"
+msgid "Choose Sonarr root folder from server..."
+msgstr ""
+
+msgctxt "#32022"
+msgid "Browse Kodi movie folder..."
+msgstr ""
+
+msgctxt "#32023"
+msgid "Choose Radarr root folder from server..."
+msgstr ""

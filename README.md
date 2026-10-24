@@ -36,12 +36,14 @@ Targets Python 3 Kodi releases, Kodi 19 and newer. Device compatibility still ne
 
 In addon settings:
 
-1. Enter Sonarr and Radarr base URLs and API keys. Both services are required in this first version. Use LAN addresses reachable from the Chromecast, not `localhost`. URLs must not include `/api/v3`.
-2. Enter Kodi and Arr path prefixes for TV and movies. Leave both fields blank for a media type only if paths are already identical.
+1. Enter Sonarr and Radarr base URLs and API keys. Both services are required for cleanup. Use LAN addresses reachable from the Chromecast, not `localhost`. URLs must not include `/api/v3`. Use the separate **Test Sonarr connection** and **Test Radarr connection** buttons. Each performs a read-only `/api/v3/system/status` request and verifies the application and version. The other service, path mappings, and background checks need not be configured to test one server.
+2. Under Path mappings, use **Browse Kodi TV folder...** and **Browse Kodi movie folder...** to select the corresponding SMB/NFS folders from Kodi's video sources. Choose the media root, not a particular show or movie folder. Use **Choose Sonarr root folder from server...** and **Choose Radarr root folder from server...** to select roots returned by `/api/v3/rootfolder`. These server paths do not need to be browsable on the Chromecast. Manual editing remains available. Leave both fields blank for a media type only if paths are already identical.
 3. Set retention days, default **3 rolling 24-hour periods**.
 4. Keep **Dry run** on and **Allow permanent deletion** off.
 5. Turn on **Enable background checks**, save settings, then run **Run dry run now**, or launch the addon from Program add-ons.
 6. Open **Show cleanup log** to review matched paths, IDs, cutoff and skipped files. The dry-run request waits until playback and library scanning stop. It never performs mutations, even if live settings are otherwise enabled.
+
+Setup buttons save and close the settings dialog before running, then reopen it. Cancelling a picker leaves the mapping unchanged. Even a single Arr root requires explicit selection. No background guesses, automatic mapping changes, or media mutations are made by these buttons.
 
 The addon does not read the development machine's `config.json`. Credentials must be entered in Kodi. API keys are masked in the UI but stored unencrypted in Kodi's local addon settings. Do not upload your Kodi profile or settings to GitHub.
 
@@ -92,7 +94,7 @@ micromamba run -n base python -m scripts.build_repository
 
 The builder creates a complete static Kodi repository under `dist/site`, including both addon ZIPs, the combined metadata index, its SHA-256 change token, and browsable HTML listings. ZIPs are built from explicit file lists, excluding config, credentials, tests, caches, and Git metadata. Repository output must be empty before building, so stale or unrelated files cannot be published by accident.
 
-GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.1.3`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
+GitHub Actions tests and packages each push. A version tag matching the service's `addon.xml`, such as `v0.2.0`, publishes both ZIPs as release assets and deploys the tested repository to GitHub Pages. Untagged development pushes do not update the live repository. The repository addon's own metadata is maintained in `repository/addon.xml` and its package is indexed alongside the service so it can also receive updates.
 
 The repository uses HTTPS. Package-header hash checks are disabled because GitHub Pages does not expose Kodi's required content-hash headers. The SHA-256 index token tells Kodi when to refresh metadata. It is not a package signature.
 

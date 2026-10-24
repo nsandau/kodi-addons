@@ -184,6 +184,30 @@ def indexed_kodi(items, mappings):
     return by_path
 
 
+def validate_service(name, service):
+    """Validate one endpoint without requiring the other services or mappings."""
+    parsed = urlsplit(service["url"])
+    if (
+        parsed.scheme not in ("http", "https")
+        or not parsed.hostname
+        or parsed.query
+        or parsed.fragment
+        or parsed.username is not None
+        or parsed.password is not None
+    ):
+        raise ValueError(f"Invalid {name} URL")
+    # Accessing port also rejects malformed or out-of-range ports before HTTP.
+    _ = parsed.port
+    if name == "kodi":
+        if not parsed.path.rstrip("/").endswith("/jsonrpc"):
+            raise ValueError("kodi.url must end with /jsonrpc")
+    else:
+        if not service.get("api_key") or "REPLACE" in service["api_key"]:
+            raise ValueError(f"Configure the {name} API key")
+        if parsed.path.rstrip("/").endswith("/api/v3"):
+            raise ValueError(f"{name}.url must be a base URL without /api/v3")
+
+
 def validate_config(config):
     days = config.get("retention_days", 3)
     if (
@@ -197,25 +221,7 @@ def validate_config(config):
         raise TypeError("dry_run must be a JSON boolean")
     configured_zone(config)
     for name in ("kodi", "sonarr", "radarr"):
-        service = config[name]
-        parsed = urlsplit(service["url"])
-        if (
-            parsed.scheme not in ("http", "https")
-            or not parsed.netloc
-            or parsed.query
-            or parsed.fragment
-            or parsed.username is not None
-            or parsed.password is not None
-        ):
-            raise ValueError(f"Invalid {name} URL")
-        if name == "kodi":
-            if not parsed.path.rstrip("/").endswith("/jsonrpc"):
-                raise ValueError("kodi.url must end with /jsonrpc")
-        else:
-            if not service.get("api_key") or "REPLACE" in service["api_key"]:
-                raise ValueError(f"Configure the {name} API key")
-            if parsed.path.rstrip("/").endswith("/api/v3"):
-                raise ValueError(f"{name}.url must be a base URL without /api/v3")
+        validate_service(name, config[name])
     for mapping in config.get("path_mappings", []):
         if (
             mapping_source(mapping["kodi"]) is None
