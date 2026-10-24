@@ -4,3 +4,6 @@ __pycache__/
 *.py[cod]
 .ruff_cache/
 dist/
+# Override workstation-wide lib/ ignores for the addon source package.
+!resources/lib/
+!resources/lib/*.py
