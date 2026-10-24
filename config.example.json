@@ -1,0 +1,28 @@
+{
+  "retention_days": 3,
+  "dry_run": true,
+  "kodi_timezone": "Europe/Copenhagen",
+  "kodi": {
+    "url": "http://192.168.1.10:8080/jsonrpc",
+    "username": "kodi",
+    "password": "REPLACE_ME"
+  },
+  "sonarr": {
+    "url": "http://192.168.1.11:8989",
+    "api_key": "REPLACE_WITH_SONARR_KEY"
+  },
+  "radarr": {
+    "url": "http://192.168.1.11:7878",
+    "api_key": "REPLACE_WITH_RADARR_KEY"
+  },
+  "path_mappings": [
+    {
+      "kodi": "/mnt/media/TV",
+      "arr": "/data/tv"
+    },
+    {
+      "kodi": "/mnt/media/Movies",
+      "arr": "/data/movies"
+    }
+  ]
+}

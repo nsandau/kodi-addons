@@ -1,0 +1,6 @@
+config.json
+*.log
+__pycache__/
+*.py[cod]
+.ruff_cache/
+dist/

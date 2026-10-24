@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings version="1">
+  <section id="service.kodi.watchedcleanup">
+    <category id="category0" label="32000">
+      <group id="1">
+        <setting id="enabled" type="boolean" label="32003"><level>0</level><default>false</default><control type="toggle"/></setting>
+        <setting id="dry_run" type="boolean" label="32004"><level>0</level><default>true</default><control type="toggle"/></setting>
+        <setting id="allow_deletion" type="boolean" label="32005"><level>0</level><default>false</default><control type="toggle"/></setting>
+        <setting id="retention_days" type="integer" label="32006"><level>0</level><default>3</default><control type="edit" format="integer"><heading>32006</heading></control></setting>
+        <setting id="interval_minutes" type="integer" label="32007"><level>0</level><default>60</default><control type="edit" format="integer"><heading>32007</heading></control></setting>
+        <setting id="run_dry" type="action" label="32008"><level>0</level><data>RunScript(service.kodi.watchedcleanup)</data><control type="button" format="action"><close>true</close></control></setting>
+        <setting id="show_logs" type="action" label="32009"><level>0</level><data>RunScript(service.kodi.watchedcleanup,logs)</data><control type="button" format="action"><close>true</close></control></setting>
+      </group>
+    </category>
+    <category id="category1" label="32001">
+      <group id="2">
+        <setting id="sonarr_url" type="string" label="32010"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32010</heading></control></setting>
+        <setting id="sonarr_api_key" type="string" label="32011"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32011</heading><hidden>true</hidden></control></setting>
+        <setting id="radarr_url" type="string" label="32012"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32012</heading></control></setting>
+        <setting id="radarr_api_key" type="string" label="32013"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32013</heading><hidden>true</hidden></control></setting>
+      </group>
+    </category>
+    <category id="category2" label="32002">
+      <group id="3">
+        <setting id="tv_kodi_path" type="string" label="32014"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32014</heading></control></setting>
+        <setting id="tv_arr_path" type="string" label="32015"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32015</heading></control></setting>
+        <setting id="movies_kodi_path" type="string" label="32016"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32016</heading></control></setting>
+        <setting id="movies_arr_path" type="string" label="32017"><level>0</level><default></default><constraints><allowempty>true</allowempty></constraints><control type="edit" format="string"><heading>32017</heading></control></setting>
+      </group>
+    </category>
+  </section>
+</settings>

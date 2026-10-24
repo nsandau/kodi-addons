@@ -1,0 +1,76 @@
+msgid ""
+msgstr ""
+"Language: en_GB\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgctxt "#32000"
+msgid "Cleanup"
+msgstr ""
+
+msgctxt "#32001"
+msgid "Servers"
+msgstr ""
+
+msgctxt "#32002"
+msgid "Path mappings"
+msgstr ""
+
+msgctxt "#32003"
+msgid "Enable background checks"
+msgstr ""
+
+msgctxt "#32004"
+msgid "Dry run (no changes)"
+msgstr ""
+
+msgctxt "#32005"
+msgid "Allow permanent deletion (also requires Dry run off)"
+msgstr ""
+
+msgctxt "#32006"
+msgid "Retention in days (rolling 24-hour periods)"
+msgstr ""
+
+msgctxt "#32007"
+msgid "Check interval in minutes (5 to 1440)"
+msgstr ""
+
+msgctxt "#32008"
+msgid "Run dry run now"
+msgstr ""
+
+msgctxt "#32009"
+msgid "Show cleanup log"
+msgstr ""
+
+msgctxt "#32010"
+msgid "Sonarr base URL"
+msgstr ""
+
+msgctxt "#32011"
+msgid "Sonarr API key"
+msgstr ""
+
+msgctxt "#32012"
+msgid "Radarr base URL"
+msgstr ""
+
+msgctxt "#32013"
+msgid "Radarr API key"
+msgstr ""
+
+msgctxt "#32014"
+msgid "Kodi TV prefix (e.g. smb://nas/media/TV)"
+msgstr ""
+
+msgctxt "#32015"
+msgid "Sonarr TV prefix (e.g. /data/tv)"
+msgstr ""
+
+msgctxt "#32016"
+msgid "Kodi movie prefix (e.g. smb://nas/media/Movies)"
+msgstr ""
+
+msgctxt "#32017"
+msgid "Radarr movie prefix (e.g. /data/movies)"
+msgstr ""

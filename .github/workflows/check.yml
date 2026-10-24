@@ -1,0 +1,19 @@
+name: Check and package
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test with the runner's Python
+        run: python3 -m unittest discover -s tests -v
+      - name: Build installable Kodi ZIP
+        run: python3 scripts/build_release.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kodi-addon
+          path: dist/*.zip

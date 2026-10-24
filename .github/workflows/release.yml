@@ -1,0 +1,33 @@
+name: Release Kodi addon
+on:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check tag and manifest version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from xml.etree import ElementTree
+          version = ElementTree.parse("addon.xml").getroot().attrib["version"]
+          if os.environ["RELEASE_TAG"] != "v" + version:
+              raise SystemExit("Tag must match addon.xml version")
+          PY
+      - name: Test
+        run: python3 -m unittest discover -s tests -v
+      - name: Package
+        run: python3 scripts/build_release.py
+      - name: Publish ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" dist/*.zip --verify-tag --title "$RELEASE_TAG" --generate-notes
